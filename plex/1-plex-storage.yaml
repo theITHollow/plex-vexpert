@@ -1,0 +1,50 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: plexserver
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: plexserver-pv-nfs-data
+  namespace: plexserver
+spec:
+  storageClassName: "default"
+  capacity:
+    storage: 1Ti                   # < max. size we reserve for the pv. A bigger value than the configdata
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  nfs:
+    path: /volume2/media            # < Name of your NFS share with subfolder
+    server: 10.10.20.20
+    readOnly: false
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: plexserver-pvc-config   # < name of the persistant volume claim ("pvc'")
+  namespace: plexserver        
+spec:  # < the pv it will "claim" to storage. Created in the previous yaml.
+  storageClassName: default
+  accessModes:
+    - ReadWriteOnce             # < Multiple pods can write to storage. Same value as pv
+  resources:
+    requests:
+      storage: 2Gi              # < How much data can the pvc claim from pv
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: plexserver-pvc-data
+  namespace: plexserver
+spec:
+  storageClassName: "default"
+  volumeName: plexserver-pv-nfs-data
+  accessModes:
+    - ReadWriteMany
+  volumeMode: Filesystem
+  resources:
+    requests:
+      storage: 200Gi

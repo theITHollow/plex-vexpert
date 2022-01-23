@@ -1,0 +1,27 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: plex-ingress
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    ingress.kubernetes.io/force-ssl-redirect: "true"
+    kubernetes.io/ingress.class: contour
+    kubernetes.io/tls-acme: "true"
+  namespace: plexserver
+spec:
+  tls:
+  - secretName: plex-cert
+    hosts:
+    - plex.theithollow.com
+  rules:
+  - host: plex.theithollow.com
+    http:
+      paths:
+      - pathType: Prefix
+        path: /web
+        backend:
+          service:
+            name: plex-tcp
+            port: 
+              number: 32400
